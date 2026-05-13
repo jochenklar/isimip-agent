@@ -1,0 +1,13 @@
+services:
+  pi:
+    build: .
+    image: pi
+    stdin_open: true
+    tty: true
+    volumes:
+    - ./pi:/home/pi/.pi
+    - ./skills:/home/pi/.agents/skills:ro
+    - ./workspace:/workspace
+    environment:
+    - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    working_dir: /workspace
