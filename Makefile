@@ -8,7 +8,10 @@ build:
 
 clean:
 	docker compose down
-	rm -r pi workspace
+	rm -fr pi/*
+
+full-clean: clean
+	rm -fr workspace/*
 
 logs:
 	docker compose logs -f
