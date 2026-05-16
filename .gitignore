@@ -10,3 +10,4 @@ __pycache__/
 /pi
 /workspace
 /.env
+/models.json

@@ -7,7 +7,8 @@ services:
     volumes:
     - ./pi:/home/pi/.pi
     - ./skills:/home/pi/.agents/skills:ro
-    - ./workspace:/workspace
+    - ./models.json:/home/pi/.pi/agent/models.json:ro
+    - ${WORKSPACE_PATH:-}:/workspace
     environment:
     - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     working_dir: /workspace
