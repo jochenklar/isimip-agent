@@ -1,5 +1,17 @@
-FROM node:22-trixie-slim
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+## isimip-agent-base
+
+FROM debian:trixie-slim AS isimip-agent
+COPY --from=ghcr.io/astral-sh/uv /uv /uvx /bin/
+
+ARG UID=1000
+ARG GID=1000
+
+ENV UID="${UID}"
+ENV GID="${GID}"
+
+ENV USER=agent
+ENV GROUP=agent
+ENV HOME=/home/agent
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -8,34 +20,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         fd-find \
         git \
+        gnupg \
         jq \
-        libnetcdf-dev \
         nco \
-        ncview \
-        netcdf-bin \
         netcdf-bin \
         ripgrep \
+    && ln -s $(which fdfind) /usr/local/bin/fd \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s $(which fdfind) /usr/local/bin/fd
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
 
 # Run as a non-root user.
-RUN useradd -m -s /bin/bash pi
-USER pi
-WORKDIR /home/pi
+RUN groupadd -g "${GID}" -r "${USER}"
+RUN useradd -r -u "${UID}" -g "${GROUP}" -m -d "${HOME}" -s /bin/bash "${USER}"
 
-# Install Pi globally for the pi user.
-RUN npm config set prefix '/home/pi/.npm-global' \
-    && npm install -g @earendil-works/pi-coding-agent
-ENV PATH="/home/pi/.npm-global/bin:${PATH}"
+RUN mkdir -p /workspace
+RUN chown "${USER}":"${GROUP}" /workspace
 
-# Python venv owned by pi
-ENV VIRTUAL_ENV=/home/pi/.venv
-ENV UV_CACHE_DIR=/home/pi/.cache/uv
-ENV PATH="/home/pi/.npm-global/bin:/home/pi/.venv/bin:${PATH}"
+USER "${USER}"
+WORKDIR "${HOME}"
+
+ENV VIRTUAL_ENV="${HOME}/.venv" \
+    UV_PYTHON_INSTALL_DIR="${HOME}/.python" \
+    UV_LINK_MODE=copy \
+    PATH="${HOME}/.npm-global/bin:${HOME}/.venv/bin/:${PATH}"
 
 RUN uv venv --python 3.12 "$VIRTUAL_ENV" \
-    && uv pip install \
+    && uv pip install --no-cache \
         cartopy \
         cftime \
         dask \
@@ -48,13 +60,34 @@ RUN uv venv --python 3.12 "$VIRTUAL_ENV" \
         xarray \
         zarr
 
-# Pre-create the config dir as the pi user. When the named volume mounts
-# at /home/pi/.pi, Docker initializes a fresh volume by copying this
-# directory's contents AND ownership — without this, the volume is
-# owned by root and Pi can't write its session files.
-RUN mkdir -p /home/pi/.pi
-
-# Working directory you'll mount your project into.
 WORKDIR /workspace
 
+## isimip-pi
+
+FROM isimip-agent AS isimip-pi
+
+RUN npm config set prefix "${HOME}/.npm-global" \
+    && npm install -g @earendil-works/pi-coding-agent \
+    && npm cache clean --force
+RUN mkdir -p /home/agent/.pi/agent
+
 CMD ["pi"]
+
+## isimip-claude
+
+FROM isimip-agent AS isimip-claude
+
+RUN npm config set prefix "${HOME}/.npm-global" \
+    && npm install -g @anthropic-ai/claude-code \
+    && npm cache clean --force
+
+CMD ["claude", "--dangerously-skip-permissions"]
+
+## isimip-tau
+
+FROM isimip-agent AS isimip-tau
+
+RUN uv pip install --no-cache tau-ai
+RUN mkdir -p /home/agent/.tau
+
+CMD ["tau"]

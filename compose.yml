@@ -1,14 +1,77 @@
+---
 services:
   pi:
-    build: .
-    image: pi
+    container_name: isimip-pi
+    image: isimip-pi:latest
+    build:
+      context: .
+      target: isimip-pi
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
     stdin_open: true
     tty: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
-    - ./pi:/home/pi/.pi
-    - ./skills:/home/pi/.agents/skills:ro
-    - ./models.json:/home/pi/.pi/agent/models.json:ro
-    - ${WORKSPACE_PATH:-}:/workspace
-    environment:
-    - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-    working_dir: /workspace
+      - ${WORKSPACE_PATH:-./workspace}:/workspace
+      - pi:/home/agent
+      - ./skills:/home/agent/.pi/agent/skills
+      - ${MODELS_JSON:-./default/models.json}:/home/agent/.pi/agent/models.json
+    env_file:
+      - .env
+    profiles: [pi]
+
+  tau:
+    container_name: isimip-tau
+    image: isimip-tau:latest
+    build:
+      context: .
+      target: isimip-tau
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    stdin_open: true
+    tty: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ${WORKSPACE_PATH:-./workspace}:/workspace
+      - tau:/home/agent
+      - ./skills:/home/agent/.tau/skills
+      - ${CATALOG_TOML:-./default/catalog.toml}:/home/agent/.tau/catalog.toml
+    env_file:
+      - .env
+    profiles: [tau]
+
+  claude:
+    container_name: isimip-claude
+    image: isimip-claude:latest
+    build:
+      context: .
+      target: isimip-claude
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    stdin_open: true
+    tty: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ${WORKSPACE_PATH:-./workspace}:/workspace
+      - claude:/home/agent
+      - ./skills:/home/agent/.claude/skills
+    env_file:
+      - .env
+    profiles: [claude]
+
+volumes:
+  pi:
+  tau:
+  claude:
