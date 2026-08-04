@@ -35,11 +35,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 RUN groupadd -g "${GID}" -r "${USER}"
 RUN useradd -r -u "${UID}" -g "${GROUP}" -m -d "${HOME}" -s /bin/bash "${USER}"
 
-RUN mkdir -p /workspace
-RUN chown "${USER}":"${GROUP}" /workspace
+RUN mkdir -p /datasets /workspace
+RUN chown "${USER}":"${GROUP}" /datasets /workspace
 
 USER "${USER}"
-WORKDIR "${HOME}"
+WORKDIR /workspace
 
 ENV VIRTUAL_ENV="${HOME}/.venv" \
     UV_PYTHON_INSTALL_DIR="${HOME}/.python" \
@@ -59,8 +59,6 @@ RUN uv venv --python 3.12 "$VIRTUAL_ENV" \
         scipy \
         xarray \
         zarr
-
-WORKDIR /workspace
 
 ## isimip-pi
 

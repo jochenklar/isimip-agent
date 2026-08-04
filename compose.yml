@@ -16,6 +16,7 @@ services:
     cap_drop:
       - ALL
     volumes:
+      - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
       - pi:/home/agent
       - ./skills:/home/agent/.pi/agent/skills
@@ -40,6 +41,7 @@ services:
     cap_drop:
       - ALL
     volumes:
+      - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
       - tau:/home/agent
       - ./skills:/home/agent/.tau/skills
@@ -64,6 +66,7 @@ services:
     cap_drop:
       - ALL
     volumes:
+      - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
       - claude:/home/agent
       - ./skills:/home/agent/.claude/skills
