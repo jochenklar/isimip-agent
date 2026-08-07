@@ -42,11 +42,12 @@ USER "${USER}"
 WORKDIR /workspace
 
 ENV VIRTUAL_ENV="${HOME}/.venv" \
+    UV_PROJECT_ENVIRONMENT="${HOME}/.venv" \
     UV_PYTHON_INSTALL_DIR="${HOME}/.python" \
     UV_LINK_MODE=copy \
-    PATH="${HOME}/.npm-global/bin:${HOME}/.venv/bin/:${PATH}"
+    PATH="${HOME}/.npm-global/bin:${HOME}/.venv/bin:${PATH}"
 
-RUN uv venv --python 3.12 "$VIRTUAL_ENV" \
+RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
     && uv pip install --no-cache \
         cartopy \
         cftime \
