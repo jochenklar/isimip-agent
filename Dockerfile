@@ -79,6 +79,7 @@ FROM isimip-agent AS isimip-claude
 RUN npm config set prefix "${HOME}/.npm-global" \
     && npm install -g @anthropic-ai/claude-code \
     && npm cache clean --force
+RUN mkdir -p /home/agent/.claude/skills
 
 CMD ["claude", "--dangerously-skip-permissions"]
 
