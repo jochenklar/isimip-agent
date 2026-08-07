@@ -81,6 +81,17 @@ RUN npm config set prefix "${HOME}/.npm-global" \
 
 CMD ["claude", "--dangerously-skip-permissions"]
 
+## isimip-codex
+
+FROM isimip-agent AS isimip-codex
+
+RUN npm config set prefix "${HOME}/.npm-global" \
+    && npm install -g @openai/codex \
+    && npm cache clean --force
+RUN mkdir -p /home/agent/.codex /home/agent/.agents/skills/
+
+CMD ["codex", "--yolo"]
+
 ## isimip-tau
 
 FROM isimip-agent AS isimip-tau

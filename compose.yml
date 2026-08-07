@@ -25,6 +25,54 @@ services:
       - .env
     profiles: [pi]
 
+  claude:
+    container_name: isimip-claude
+    image: isimip-claude:latest
+    build:
+      context: .
+      target: isimip-claude
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    stdin_open: true
+    tty: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ${DATASETS_PATH:-./datasets}:/datasets:ro
+      - ${WORKSPACE_PATH:-./workspace}:/workspace
+      - claude:/home/agent
+      - ./skills:/home/agent/.claude/skills
+    env_file:
+      - .env
+    profiles: [claude]
+
+  codex:
+    container_name: isimip-codex
+    image: isimip-codex:latest
+    build:
+      context: .
+      target: isimip-codex
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    stdin_open: true
+    tty: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ${DATASETS_PATH:-./datasets}:/datasets:ro
+      - ${WORKSPACE_PATH:-./workspace}:/workspace
+      - codex:/home/agent
+      - ./skills:/home/agent/.agents/skills/
+    env_file:
+      - .env
+    profiles: [codex]
+
   tau:
     container_name: isimip-tau
     image: isimip-tau:latest
@@ -50,31 +98,10 @@ services:
       - .env
     profiles: [tau]
 
-  claude:
-    container_name: isimip-claude
-    image: isimip-claude:latest
-    build:
-      context: .
-      target: isimip-claude
-      args:
-        UID: ${AGENT_UID:-1000}
-        GID: ${AGENT_GID:-1000}
-    stdin_open: true
-    tty: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    volumes:
-      - ${DATASETS_PATH:-./datasets}:/datasets:ro
-      - ${WORKSPACE_PATH:-./workspace}:/workspace
-      - claude:/home/agent
-      - ./skills:/home/agent/.claude/skills
-    env_file:
-      - .env
-    profiles: [claude]
+
 
 volumes:
   pi:
-  tau:
   claude:
+  codex:
+  tau:
