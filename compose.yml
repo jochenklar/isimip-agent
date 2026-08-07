@@ -68,7 +68,7 @@ services:
       - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
       - codex:/home/agent
-      - ./skills:/home/agent/.agents/skills/
+      - ./skills:/home/agent/.codex/skills/
     env_file:
       - .env
     profiles: [codex]
