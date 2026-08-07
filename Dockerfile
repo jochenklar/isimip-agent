@@ -35,17 +35,19 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 RUN groupadd -g "${GID}" -r "${USER}"
 RUN useradd -r -u "${UID}" -g "${GROUP}" -m -d "${HOME}" -s /bin/bash "${USER}"
 
-RUN mkdir -p /datasets /workspace
-RUN chown "${USER}":"${GROUP}" /datasets /workspace
+RUN mkdir -p /datasets /workspace /opt/env /opt/python /opt/npm
+RUN chown "${USER}":"${GROUP}" /datasets /workspace /opt/env /opt/python /opt/npm
 
 USER "${USER}"
 WORKDIR /workspace
 
-ENV VIRTUAL_ENV="${HOME}/.venv" \
-    UV_PROJECT_ENVIRONMENT="${HOME}/.venv" \
-    UV_PYTHON_INSTALL_DIR="${HOME}/.python" \
+ENV VIRTUAL_ENV="/opt/env" \
+    UV_PROJECT_ENVIRONMENT="/opt/env" \
+    UV_PYTHON_INSTALL_DIR="/opt/python" \
     UV_LINK_MODE=copy \
-    PATH="${HOME}/.npm-global/bin:${HOME}/.venv/bin:${PATH}"
+    PATH="/opt/npm/bin:/opt/env/bin:${PATH}"
+
+RUN npm config set prefix "/opt/npm"
 
 RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
     && uv pip install --no-cache \
@@ -53,6 +55,9 @@ RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
         cftime \
         dask \
         h5netcdf \
+        isimip-ea \
+        isimip-qc \
+        isimip-utils \
         matplotlib \
         netCDF4 \
         numpy \
@@ -65,8 +70,7 @@ RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
 
 FROM isimip-agent AS isimip-pi
 
-RUN npm config set prefix "${HOME}/.npm-global" \
-    && npm install -g @earendil-works/pi-coding-agent \
+RUN npm install -g @earendil-works/pi-coding-agent \
     && npm cache clean --force
 RUN mkdir -p /home/agent/.pi/agent
 
@@ -76,8 +80,7 @@ CMD ["pi"]
 
 FROM isimip-agent AS isimip-claude
 
-RUN npm config set prefix "${HOME}/.npm-global" \
-    && npm install -g @anthropic-ai/claude-code \
+RUN npm install -g @anthropic-ai/claude-code \
     && npm cache clean --force
 RUN mkdir -p /home/agent/.claude/skills
 
@@ -87,8 +90,7 @@ CMD ["claude", "--dangerously-skip-permissions"]
 
 FROM isimip-agent AS isimip-codex
 
-RUN npm config set prefix "${HOME}/.npm-global" \
-    && npm install -g @openai/codex \
+RUN npm install -g @openai/codex \
     && npm cache clean --force
 RUN mkdir -p /home/agent/.codex /home/agent/.agents/skills/
 

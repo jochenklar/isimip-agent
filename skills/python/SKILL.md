@@ -12,19 +12,19 @@ This container has a pre-configured Python environment. Use it directly — do n
 Before the first Python command or package operation, verify the active environment when it has not already been established in the current task:
 
 ```bash
-which python
 echo "$VIRTUAL_ENV"
+ls -l /opt/env/bin/python
 ```
 
-Expect the interpreter at `/home/agent/.venv/bin/python`. Do not create `.venv`, `venv`, `env`, or another environment; use the existing `/home/agent/.venv`. If a repository's instructions request a separate venv, report the conflict and continue with the preconfigured environment unless the user explicitly directs otherwise.
+Expect `VIRTUAL_ENV` to be `/opt/env` and the interpreter at `/opt/env/bin/python`. The environment's `bin` directory may not be on `PATH`, so `python` may not resolve even though the environment is configured; invoke the interpreter by its absolute path. Do not create `.venv`, `venv`, `env`, or another environment; use the existing `/opt/env`. If a repository's instructions request a separate venv, report the conflict and continue with the preconfigured environment unless the user explicitly directs otherwise.
 
 ## Running Python
 
 Use the preconfigured interpreter explicitly:
 
 ```bash
-/home/agent/.venv/bin/python script.py
-/home/agent/.venv/bin/python -c "import xarray; print(xarray.__version__)"
+/opt/env/bin/python script.py
+/opt/env/bin/python -c "import xarray; print(xarray.__version__)"
 ```
 
 It is Python 3.12 and is managed by uv. Do not use `/usr/bin/python3`; that is the system interpreter.
@@ -40,7 +40,7 @@ uv pip uninstall <package>
 uv pip list
 ```
 
-Explicitly target the preconfigured interpreter: `uv pip <command> --python /home/agent/.venv/bin/python ...`. Plain `pip` also works but is slower.
+Explicitly target the preconfigured interpreter: `uv pip <command> --python /opt/env/bin/python ...`. Plain `pip` also works but is slower.
 
 ## Pre-installed packages
 
@@ -65,7 +65,7 @@ Prefer these for quick inspection or simple transformations; reach for Python wh
 
 ## What NOT to do
 
-- Don't run `python3 -m venv ...` — the venv already exists at `/home/agent/.venv`.
+- Don't run `python3 -m venv ...` — the venv already exists at `/opt/env`.
 - Don't run `python -m venv`, `virtualenv`, `uv venv`, or environment-creation tools under another spelling.
 - Don't create a project-local environment merely to isolate dependencies.
 - Don't run `pip install --user` — it installs outside the venv and won't be importable.
@@ -78,6 +78,6 @@ Prefer these for quick inspection or simple transformations; reach for Python wh
 If anything looks off:
 
 ```bash
-/home/agent/.venv/bin/python --version         # Python 3.12
-uv pip list --python /home/agent/.venv/bin/python
+/opt/env/bin/python --version         # Python 3.12
+uv pip list --python /opt/env/bin/python
 ```
