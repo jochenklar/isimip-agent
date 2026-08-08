@@ -1,7 +1,18 @@
----
+# common config for all profiles
+x-common: &common
+  stdin_open: true
+  tty: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  env_file:
+    - path: ./.env
+      required: false
+
 services:
   pi:
-    container_name: isimip-pi
+    <<: *common
     image: isimip-pi:latest
     build:
       context: .
@@ -9,24 +20,16 @@ services:
       args:
         UID: ${AGENT_UID:-1000}
         GID: ${AGENT_GID:-1000}
-    stdin_open: true
-    tty: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
     volumes:
+      - pi:/home/agent
       - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
-      - pi:/home/agent
-      - ./skills:/home/agent/.pi/agent/skills
+      - ${SKILLS_PATH:-./skills}:/home/agent/.pi/agent/skills
       - ${MODELS_JSON:-./default/models.json}:/home/agent/.pi/agent/models.json
-    env_file:
-      - .env
     profiles: [pi]
 
   claude:
-    container_name: isimip-claude
+    <<: *common
     image: isimip-claude:latest
     build:
       context: .
@@ -34,23 +37,15 @@ services:
       args:
         UID: ${AGENT_UID:-1000}
         GID: ${AGENT_GID:-1000}
-    stdin_open: true
-    tty: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
     volumes:
+      - claude:/home/agent
       - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
-      - claude:/home/agent
-      - ./skills:/home/agent/.claude/skills
-    env_file:
-      - .env
+      - ${SKILLS_PATH:-./skills}:/home/agent/.claude/skills
     profiles: [claude]
 
   codex:
-    container_name: isimip-codex
+    <<: *common
     image: isimip-codex:latest
     build:
       context: .
@@ -58,23 +53,15 @@ services:
       args:
         UID: ${AGENT_UID:-1000}
         GID: ${AGENT_GID:-1000}
-    stdin_open: true
-    tty: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
     volumes:
+      - codex:/home/agent
       - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
-      - codex:/home/agent
-      - ./skills:/home/agent/.codex/skills/
-    env_file:
-      - .env
+      - ${SKILLS_PATH:-./skills}:/home/agent/.codex/skills/
     profiles: [codex]
 
   tau:
-    container_name: isimip-tau
+    <<: *common
     image: isimip-tau:latest
     build:
       context: .
@@ -82,20 +69,12 @@ services:
       args:
         UID: ${AGENT_UID:-1000}
         GID: ${AGENT_GID:-1000}
-    stdin_open: true
-    tty: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
     volumes:
+      - tau:/home/agent
       - ${DATASETS_PATH:-./datasets}:/datasets:ro
       - ${WORKSPACE_PATH:-./workspace}:/workspace
-      - tau:/home/agent
-      - ./skills:/home/agent/.tau/skills
+      - ${SKILLS_PATH:-./skills}:/home/agent/.tau/skills
       - ${CATALOG_TOML:-./default/catalog.toml}:/home/agent/.tau/catalog.toml
-    env_file:
-      - .env
     profiles: [tau]
 
 volumes:

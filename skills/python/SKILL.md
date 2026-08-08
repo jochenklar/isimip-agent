@@ -27,7 +27,7 @@ Use the preconfigured interpreter explicitly:
 /opt/env/bin/python -c "import xarray; print(xarray.__version__)"
 ```
 
-It is Python 3.12 and is managed by uv. Do not use `/usr/bin/python3`; that is the system interpreter.
+It is managed by uv; run `/opt/env/bin/python --version` if the exact version matters. Do not use `/usr/bin/python3`; that is the system interpreter.
 
 ## Installing packages
 
@@ -78,6 +78,6 @@ Prefer these for quick inspection or simple transformations; reach for Python wh
 If anything looks off:
 
 ```bash
-/opt/env/bin/python --version         # Python 3.12
+/opt/env/bin/python --version
 uv pip list --python /opt/env/bin/python
 ```

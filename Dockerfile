@@ -1,4 +1,4 @@
-## isimip-agent-base
+## isimip-agent base
 
 FROM debian:trixie-slim AS isimip-agent
 COPY --from=ghcr.io/astral-sh/uv /uv /uvx /bin/
@@ -9,9 +9,9 @@ ARG GID=1000
 ENV UID="${UID}"
 ENV GID="${GID}"
 
-ENV USER=agent
-ENV GROUP=agent
-ENV HOME=/home/agent
+ENV USER=agent \
+    GROUP=agent \
+    HOME=/home/agent
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
