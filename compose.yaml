@@ -1,0 +1,86 @@
+# common config for all profiles
+x-common: &common
+  stdin_open: true
+  tty: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  env_file:
+    - path: ./.env
+      required: false
+
+services:
+  pi:
+    <<: *common
+    build:
+      context: .
+      target: pi
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    volumes:
+      - pi:/home/agent
+      - ${WORKSPACE_PATH:-./workspace}:/home/agent/workspace
+    profiles: [pi]
+
+  opencode:
+    <<: *common
+    build:
+      context: .
+      target: opencode
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    volumes:
+      - opencode:/home/agent
+      - ${WORKSPACE_PATH:-./workspace}:/home/agent/workspace
+    profiles: [opencode]
+
+  claude:
+    <<: *common
+    build:
+      context: .
+      target: claude
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    volumes:
+      - claude:/home/agent
+      - ${WORKSPACE_PATH:-./workspace}:/home/agent/workspace
+    profiles: [claude]
+
+  codex:
+    <<: *common
+    build:
+      context: .
+      target: codex
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    volumes:
+      - codex:/home/agent
+      - ${WORKSPACE_PATH:-./workspace}:/home/agent/workspace
+    profiles: [codex]
+
+  tau:
+    <<: *common
+    build:
+      context: .
+      target: tau
+      args:
+        UID: ${AGENT_UID:-1000}
+        GID: ${AGENT_GID:-1000}
+    volumes:
+      - tau:/home/agent
+      - ${WORKSPACE_PATH:-./workspace}:/home/agent/workspace
+    profiles: [tau]
+
+volumes:
+  pi:
+  opencode:
+  claude:
+  codex:
+  tau:

@@ -1,6 +1,6 @@
 ## isimip-agent base
 
-FROM debian:trixie-slim AS isimip-agent
+FROM debian:trixie-slim AS agent
 COPY --from=ghcr.io/astral-sh/uv /uv /uvx /bin/
 
 ARG UID=1000
@@ -25,21 +25,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         nco \
         netcdf-bin \
         ripgrep \
+        unzip \
     && ln -s $(which fdfind) /usr/local/bin/fd \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs
 
-# Run as a non-root user.
-RUN groupadd -g "${GID}" -r "${USER}"
+RUN groupadd --system --gid "${GID}" "${GROUP}"
 RUN useradd -r -u "${UID}" -g "${GROUP}" -m -d "${HOME}" -s /bin/bash "${USER}"
 
-RUN mkdir -p /datasets /workspace /opt/env /opt/python /opt/npm
-RUN chown "${USER}":"${GROUP}" /datasets /workspace /opt/env /opt/python /opt/npm
+RUN mkdir -p /home/agent/workspace /opt/env /opt/npm /opt/python
+RUN chown -R "${UID}:${GID}" "${HOME}" /home/agent/workspace /opt/env /opt/npm /opt/python
 
 USER "${USER}"
-WORKDIR /workspace
+WORKDIR /home/agent/workspace
 
 ENV VIRTUAL_ENV="/opt/env" \
     UV_PROJECT_ENVIRONMENT="/opt/env" \
@@ -66,39 +66,45 @@ RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
         xarray \
         zarr
 
-## isimip-pi
+## pi
 
-FROM isimip-agent AS isimip-pi
+FROM agent AS pi
 
-RUN npm install -g @earendil-works/pi-coding-agent \
-    && npm cache clean --force
+RUN npm install -g @earendil-works/pi-coding-agent
 RUN mkdir -p /home/agent/.pi/agent
 
 CMD ["pi"]
 
-## isimip-claude
+## opencode
 
-FROM isimip-agent AS isimip-claude
+FROM agent AS opencode
 
-RUN npm install -g @anthropic-ai/claude-code \
-    && npm cache clean --force
+RUN npm install -g opencode-ai@latest
+RUN mkdir -p /home/agent/.config/opencode
+
+CMD ["opencode", "--auto"]
+
+## claude
+
+FROM agent AS claude
+
+RUN npm install -g @anthropic-ai/claude-code
 RUN mkdir -p /home/agent/.claude/skills
 
 CMD ["claude", "--dangerously-skip-permissions"]
 
-## isimip-codex
+## codex
 
-FROM isimip-agent AS isimip-codex
+FROM agent AS codex
 
-RUN npm install -g @openai/codex \
-    && npm cache clean --force
-RUN mkdir -p /home/agent/.codex /home/agent/.agents/skills/
+RUN npm install -g @openai/codex
+RUN mkdir -p /home/agent/.codex /home/agent/.codex/skills/
 
 CMD ["codex", "--yolo"]
 
-## isimip-tau
+## tau
 
-FROM isimip-agent AS isimip-tau
+FROM agent AS tau
 
 RUN uv pip install --no-cache tau-ai
 RUN mkdir -p /home/agent/.tau
