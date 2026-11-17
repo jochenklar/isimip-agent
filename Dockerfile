@@ -1,7 +1,6 @@
-## isimip-agent base
+## base
 
-FROM debian:trixie-slim AS agent
-COPY --from=ghcr.io/astral-sh/uv /uv /uvx /bin/
+FROM alpine:latest AS agent
 
 ARG UID=1000
 ARG GID=1000
@@ -13,27 +12,39 @@ ENV USER=agent \
     GROUP=agent \
     HOME=/home/agent
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        cdo \
-        curl \
-        fd-find \
-        git \
-        gnupg \
-        jq \
-        nco \
-        netcdf-bin \
-        ripgrep \
-        unzip \
-    && ln -s $(which fdfind) /usr/local/bin/fd \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache --update \
+    bash \
+    coreutils \
+    curl \
+    diffutils \
+    fd \
+    file \
+    findutils \
+    gawk \
+    git \
+    github-cli \
+    grep \
+    gzip \
+    jq \
+    less \
+    make \
+    nodejs \
+    npm \
+    patch \
+    procps-ng \
+    ripgrep \
+    sed \
+    tar \
+    tree \
+    unzip \
+    util-linux \
+    uv \
+    xz \
+    yq-go \
+    zip
 
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs
-
-RUN groupadd --system --gid "${GID}" "${GROUP}"
-RUN useradd -r -u "${UID}" -g "${GROUP}" -m -d "${HOME}" -s /bin/bash "${USER}"
+RUN addgroup -g "${GID}" -S "${GROUP}"
+RUN adduser -S "${USER}" -u "${UID}" -G "${GROUP}" -h "${HOME}" -s "/bin/sh"
 
 RUN mkdir -p /home/agent/workspace /opt/env /opt/npm /opt/python
 RUN chown -R "${UID}:${GID}" "${HOME}" /home/agent/workspace /opt/env /opt/npm /opt/python
@@ -49,22 +60,7 @@ ENV VIRTUAL_ENV="/opt/env" \
 
 RUN npm config set prefix "/opt/npm"
 
-RUN uv venv --seed --python 3.12 "$VIRTUAL_ENV" \
-    && uv pip install --no-cache \
-        cartopy \
-        cftime \
-        dask \
-        h5netcdf \
-        isimip-ea \
-        isimip-qc \
-        isimip-utils \
-        matplotlib \
-        netCDF4 \
-        numpy \
-        pandas \
-        scipy \
-        xarray \
-        zarr
+RUN uv venv --seed --python 3.14 "$VIRTUAL_ENV"
 
 ## pi
 

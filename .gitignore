@@ -7,13 +7,6 @@ __pycache__/
 *.save
 .DS_Store
 
-*.yaml
-!compose.yaml
-!copier.yaml
-
 /.env
-/catalog.toml
-/models.json
-/opencode.json
 /skills
 /workspace

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {
+        "baseURL": "http://host.docker.internal:11435/v1",
+        "apiKey": "ollama"
+      },
+      "models": {
+        "qwen3.8:latest": {
+          "name": "qwen3.8:latest"
+        }
+      }
+    }
+  },
+  "model": "ollama/gemma4:e2b"
+}

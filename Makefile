@@ -7,7 +7,7 @@ WORKSPACE_PATH ?= ./workspace
 
 # set compose env vars
 COMPOSE_PROFILES := $(AGENT)
-COMPOSE_FILE := compose.yaml$(if $(wildcard $(AGENT).yaml),:$(AGENT).yaml)
+COMPOSE_FILE := compose.yaml$(if $(wildcard volumes.yaml),:volumes.yaml)
 
 ifeq ($(shell uname -s),Darwin)
 # macOS
